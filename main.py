@@ -13,4 +13,4 @@ def hello_world():
 
 @main.route('/dashboard')
 def dashboard():
-    pass
+    return 'restricted'
