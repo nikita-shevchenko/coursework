@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask.cli import with_appcontext
 import click
 from flask_login import LoginManager
 
@@ -22,22 +23,31 @@ def create_app():
     app.register_blueprint(main_blueprint)
 
     @click.command(name='create-tables')
+    @with_appcontext
     def create_tables():
         db.drop_all()
         db.create_all(app=app)
 
+    @click.command(name='populate-tables')
+    @with_appcontext
+    def populate_tables():
+        from populate import populate
+        populate()
+
     app.cli.add_command(create_tables)
+    app.cli.add_command(populate_tables)
 
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'main.hello_world'
 
-    from models import Student
+    from models import Student, Group, Subject, Lection, Label, Resource, Test, Task, Laboratory, Implementation
     __package__ = 'coursework.models'
 
     @login_manager.user_loader
-    def load_user(record_book):
-        return Student.query.get(record_book)
+    def load_user(id):
+        return Student.query.get(id)
 
     return app
 
-#app = create_app()
+app = create_app()
